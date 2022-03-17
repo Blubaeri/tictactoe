@@ -111,6 +111,16 @@ def victoryCheck(board):
             return(True)
         elif all(choice == 'O' for choice in row):
             return(True)
+        for col in range(len(row)):
+            if(type(row[col]) == str):
+                if(col + 1 < 3) and (count + 1 < 3):
+                    if(board[count][0] == board[count+1][1] == board[count+2][2]):
+                        return(True)
+                    elif(board[count][2] == board[count+1][1] == board[count+2][0]):
+                        return(True)
+                    elif(board[count][col] == board[count+1][col] == board[count+2][col]):
+                        return(True)
+        count += 1
 
     return(False)
     
