@@ -34,6 +34,7 @@ class colors:
         lightgrey='\033[47m'
 """
 
+# For coloring the text
 class colors:
     reset='\033[0m'
     class fg:
@@ -42,9 +43,6 @@ class colors:
         player='\033[32m' # Green
     class bg:
         green='\033[42m'
-
-class player():
-    score = 0
 
 # Expected input range: None
 # Output: Checks if user wants to play again
@@ -71,39 +69,27 @@ def isPositionAvaliable(tile, board):
 def printBoard(tile, choice, board):
     # Prints the board
     count = 0
-    if (victoryCheck(board) == False):
-        for row in board:
-            for col in row:
-                if(col == choice):
+    for row in board:
+        for col in row:
+            if(col == choice):
+                if (victoryCheck(board) == False):
                     if(count % 2 == 0) and (count != 0):
                         print(colors.fg.player + col + colors.reset, end = "")
                     else:
                         print(colors.fg.player + col + colors.reset, end = " | ")
-                elif(col % 3 == 0):    
-                    print(col, end = "")
                 else:
-                    print(col, end = " | ")
-
-                count += 1
-            print("\t")
-            count = 0
-    else:
-        for row in board:
-            for col in row:
-                if(col == choice):
                     if(count % 2 == 0) and (count != 0):
-                        print(colors.bg.green + colors.fg.black + col  + colors.reset, end = "")
+                        print(colors.bg.green + colors.fg.black + col + colors.reset, end = "")
                     else:
                         print(colors.bg.green + colors.fg.black +  col + colors.reset, end = " | ")
-                elif(col % 3 == 0):    
-                    print(col, end = "")
-                else:
-                    print(col, end = " | ")
+            elif(col % 3 == 0):    
+                print(col, end = "")
+            else:
+                print(col, end = " | ")
 
-                count += 1
-            print("\t")
-            count = 0
-    print("------------------")
+            count += 1
+        print("\t")
+        count = 0
 
 # Expected input range: 1-9, string, array
 # Output: Returns a updated board
@@ -119,13 +105,12 @@ def updateBoard(tile, choice, board):
 # Expected input range: Array
 # Output: Checks if the game is over, returns bool
 def victoryCheck(board):
-    d1 = [1,5,9] 
+    count = 0
     for row in board:
         if all(choice == 'X' for choice in row):
             return(True)
         elif all(choice == 'O' for choice in row):
             return(True)
-    
 
     return(False)
     
