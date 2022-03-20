@@ -43,6 +43,11 @@ class colors:
         player='\033[32m' # Green
     class bg:
         green='\033[42m'
+        red='\033[41m'
+
+# Tracks the scores of the player and enemy
+playerScore = 0
+enemyScore = 0
 
 # Expected input range: None
 # Output: Checks if user wants to play again
@@ -55,6 +60,17 @@ def loop():
         print("Goodbye!")
         return(False)
 
+# Expected input range: 1 to 9
+# Output: Converts to int
+def checkInt(choice):
+    try:
+        choice = int(choice)
+    except(ValueError):
+        choice = int(input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset))
+        if(choice > 9) or (choice < 1):
+            choice = int(input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset))
+    return(choice)
+
 # Expected input range: 1-9
 # Output: Checks if a tile is avaliable, returns bool
 def isPositionAvaliable(tile, board):
@@ -64,24 +80,22 @@ def isPositionAvaliable(tile, board):
                 return(False)
     return(True)
 
-# Expected input range: 1-9, string, array
-# Output: Prints the board with updated choices
-def printBoard(tile, choice, board):
-    # Prints the board
+# Expected input range: Array and a character
+# Output: Prints victory board for player
+def printBoardPlayer(board, choice):
     count = 0
     for row in board:
         for col in row:
             if(col == choice):
-                if (victoryCheck(board) == False):
-                    if(count % 2 == 0) and (count != 0):
-                        print(colors.fg.player + col + colors.reset, end = "")
-                    else:
-                        print(colors.fg.player + col + colors.reset, end = " | ")
+                if(count % 2 == 0) and (count != 0):
+                    print(colors.bg.green + colors.fg.black + 'O' + colors.reset, end = "")
                 else:
-                    if(count % 2 == 0) and (count != 0):
-                        print(colors.bg.green + colors.fg.black + col + colors.reset, end = "")
-                    else:
-                        print(colors.bg.green + colors.fg.black +  col + colors.reset, end = " | ")
+                    print(colors.bg.green + colors.fg.black +  'O' + colors.reset, end = " | ")
+            elif(col != choice) and (type(col) == str):
+                if(count % 2 == 0) and (count != 0):
+                    print(colors.fg.enemy + 'X' + colors.reset, end = "")
+                else:
+                    print(colors.fg.enemy + 'X' + colors.reset, end = " | ")
             elif(col % 3 == 0):    
                 print(col, end = "")
             else:
@@ -90,6 +104,69 @@ def printBoard(tile, choice, board):
             count += 1
         print("\t")
         count = 0
+    global playerScore
+    playerScore += 1
+
+# Expected input range: Array and a character
+# Output: Prints victory board for enemy
+def printBoardEnemy(board, choice):
+    count = 0
+    for row in board:
+        for col in row:
+            if(col == choice):
+                if(count % 2 == 0) and (count != 0):
+                    print(colors.bg.red + colors.fg.black + 'X' + colors.reset, end = "")
+                else:
+                    print(colors.bg.red + colors.fg.black +  'X' + colors.reset, end = " | ")
+            elif(col != choice) and (type(col) == str):
+                if(count % 2 == 0) and (count != 0):
+                    print(colors.fg.player + 'O' + colors.reset, end = "")
+                else:
+                    print(colors.fg.player + 'O' + colors.reset, end = " | ")
+            elif(col % 3 == 0):    
+                print(col, end = "")
+            else:
+                print(col, end = " | ")
+
+            count += 1
+        print("\t")
+        count = 0
+    global enemyScore
+    enemyScore += 1
+
+# Expected input range: string, array
+# Output: Prints the board with updated choices
+def printBoard(board, player):
+    # Prints the board
+    count = 0
+
+    if(victoryCheck(board)):
+        if(player == 1):
+            printBoardPlayer(board, 'O')
+        elif(player == 2):
+            printBoardEnemy(board, 'X')
+    if (victoryCheck(board) == False):
+        for row in board:
+            for col in row:
+                if(type(col) == str):
+                        if(col == 'O'):
+                            if(count % 2 == 0) and (count != 0):
+                                print(colors.fg.player + 'O' + colors.reset, end = "")
+                            else:
+                                print(colors.fg.player + 'O' + colors.reset, end = " | ")
+                        elif(col == 'X'):
+                            if(count % 2 == 0) and (count != 0):
+                                print(colors.fg.enemy + 'X' + colors.reset, end = "")
+                            else:
+                                print(colors.fg.enemy + 'X' + colors.reset, end = " | ")
+                elif(col % 3 == 0):    
+                    print(col, end = "")
+                else:
+                    print(col, end = " | ")
+
+                count += 1
+            print("\t")
+            count = 0
 
 # Expected input range: 1-9, string, array
 # Output: Returns a updated board
@@ -102,21 +179,21 @@ def updateBoard(tile, choice, board):
             break
     return(board)
 
-# Expected input range: Array
+# Expected input range: Array and choice for player/enemy
 # Output: Checks if the game is over, returns bool
 def victoryCheck(board):
     count = 0
     for row in board:
-        if all(choice == 'X' for choice in row):
+        if all(letter == 'X' for letter in row):
             return(True)
-        elif all(choice == 'O' for choice in row):
+        elif all(letter == 'O' for letter in row):
             return(True)
         for col in range(len(row)):
             if(type(row[col]) == str):
                 if(col + 1 < 3) and (count + 1 < 3):
                     if(board[count][0] == board[count+1][1] == board[count+2][2]):
                         return(True)
-                    elif(board[count][2] == board[count+1][1] == board[count+2][0]):
+                    elif(board[count][col] == board[count-1][col+1] == board[count+1][col-1]):
                         return(True)
                     elif(board[count][col] == board[count+1][col] == board[count+2][col]):
                         return(True)
@@ -126,15 +203,26 @@ def victoryCheck(board):
     
 # Expected input range: Array
 # Output: Runs the other functions to play the game
-def playGame(board, choice):
-    tile = int(input("Please choose a tile: "))
-    while(isPositionAvaliable(tile, board) == False):
-        tile = int(input("Please choose a different tile: "))  
+def playGame(board, playerChoice, enemyChoice):
+    tilePlayer = input(colors.fg.player + "Player 1" + colors.reset + ", Please choose a tile: ")
+    tilePlayer = checkInt(tilePlayer)
+    while(isPositionAvaliable(tilePlayer, board) == False):
+        tilePlayer = int(input(colors.fg.enemy + "Please choose a different tile: " + colors.reset))  
     else:
-        board = updateBoard(tile, choice, board)
-        printBoard(tile, choice, board)
+        board = updateBoard(tilePlayer, playerChoice, board)
+        printBoard(board, 1)
+        if(victoryCheck(board)):
+            return(board)
 
-    return(board)
+    tileEnemy = input(colors.fg.enemy + "Player 2" + colors.reset + ", Please choose a tile: ")
+    tileEnemy = checkInt(tileEnemy)
+    while(isPositionAvaliable(tileEnemy, board) == False):
+        tileEnemy = int(input(colors.fg.enemy + "Please choose a different tile: " + colors.reset))  
+    else:
+        board = updateBoard(tileEnemy, enemyChoice, board)
+        printBoard(board, 2)
+        if(victoryCheck(board)):
+            return(board)
 
 
 def main():
@@ -152,15 +240,27 @@ def main():
     board = [[1, 2, 3],
            [4, 5, 6],
            [7, 8, 9]]
-    choice = input("Please choose X or O: ")
-    choice = choice.upper()
+
+    player = 'O'
+    enemy = 'X'
+
     while (result != True):
-        playGame(board, choice)
+        playGame(board, player, enemy)
         result = victoryCheck(board)
+
     if(result == True):
         print("You win! Thanks for playing!")
+        print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset)
     else:
         print("You lose! Good luck next time.")
+        print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset)
+
+"""
+For AI, use secrets from rand for more random choices, lowest level AI is just choosing randomly,
+without regard for player choice, can make AI smarter by having checks to see where player places
+their choices, and tries to block their moves
+Docs: https://docs.python.org/3/library/random.html
+"""
 
 if(__name__ == "__main__"):
     main()
