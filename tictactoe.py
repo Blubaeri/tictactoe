@@ -1,39 +1,3 @@
-"""
-class colors:
-    reset='\033[0m'
-    bold='\033[01m'
-    disable='\033[02m'
-    underline='\033[04m'
-    reverse='\033[07m'
-    strikethrough='\033[09m'
-    invisible='\033[08m'
-    class fg:
-        black='\033[30m'
-        red='\033[31m'
-        green='\033[32m'
-        orange='\033[33m'
-        blue='\033[34m'
-        purple='\033[35m'
-        cyan='\033[36m'
-        lightgrey='\033[37m'
-        darkgrey='\033[90m'
-        lightred='\033[91m'
-        lightgreen='\033[92m'
-        yellow='\033[93m'
-        lightblue='\033[94m'
-        pink='\033[95m'
-        lightcyan='\033[96m'
-    class bg:
-        black='\033[40m'
-        red='\033[41m'
-        green='\033[42m'
-        orange='\033[43m'
-        blue='\033[44m'
-        purple='\033[45m'
-        cyan='\033[46m'
-        lightgrey='\033[47m'
-"""
-
 # For coloring the text
 class colors:
     reset='\033[0m'
@@ -63,12 +27,18 @@ def loop():
 # Expected input range: 1 to 9
 # Output: Converts to int
 def checkInt(choice):
-    try:
-        choice = int(choice)
-    except(ValueError):
-        choice = int(input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset))
-        if(choice > 9) or (choice < 1):
-            choice = int(input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset))
+    while True:
+        try:
+            choice = int(choice)
+        except(ValueError):
+            choice = input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset)
+            continue
+        else:
+            if(choice > 9) or (choice < 1):
+                choice = int(input(colors.fg.enemy + "Please choose a valid tile: " + colors.reset))
+            else:
+                break
+    
     return(choice)
 
 # Expected input range: 1-9
@@ -76,9 +46,9 @@ def checkInt(choice):
 def isPositionAvaliable(tile, board):
     for row in board:
         for col in row:
-            if (type(tile) == str):
-                return(False)
-    return(True)
+            if col == tile:
+                return(True)
+    return(False)
 
 # Expected input range: Array and a character
 # Output: Prints victory board for player
@@ -106,6 +76,9 @@ def printBoardPlayer(board, choice):
         count = 0
     global playerScore
     playerScore += 1
+    print('\t')
+    print("You win! Thanks for playing!\n")
+    print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset + "\n")
 
 # Expected input range: Array and a character
 # Output: Prints victory board for enemy
@@ -133,6 +106,9 @@ def printBoardEnemy(board, choice):
         count = 0
     global enemyScore
     enemyScore += 1
+    print('\t')
+    print("You lose! Good luck next time.")
+    print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset + "\n")
 
 # Expected input range: string, array
 # Output: Prints the board with updated choices
@@ -179,7 +155,24 @@ def updateBoard(tile, choice, board):
             break
     return(board)
 
-# Expected input range: Array and choice for player/enemy
+# Expected input: Array
+# Output: Checks if board is a stalemate or not
+def stalemate(board):
+    countLetters = 0
+    countItems = 0
+    if(victoryCheck(board) == False):
+        for row in board:
+            for col in row:
+                countItems += 1
+                if(type(col) == str):
+                    countLetters += 1
+
+    if((countLetters == countItems) and countLetters > 0 and countItems > 0):
+        return(True)
+    else:
+        return(False)
+
+# Expected input range: Array
 # Output: Checks if the game is over, returns bool
 def victoryCheck(board):
     count = 0
@@ -190,15 +183,14 @@ def victoryCheck(board):
             return(True)
         for col in range(len(row)):
             if(type(row[col]) == str):
-                if(col + 1 < 3) and (count + 1 < 3):
-                    if(board[count][0] == board[count+1][1] == board[count+2][2]):
+                if(col + 1 < 3) and (count + 1 < 3) and (count - 1 > -1):
+                    if(board[count-1][0] == board[count][1] == board[count+1][2]):
                         return(True)
                     elif(board[count][col] == board[count-1][col+1] == board[count+1][col-1]):
                         return(True)
-                    elif(board[count][col] == board[count+1][col] == board[count+2][col]):
+                    elif(board[count-1][col] == board[count][col] == board[count+1][col]):
                         return(True)
-        count += 1
-
+        count += 1      
     return(False)
     
 # Expected input range: Array
@@ -208,20 +200,28 @@ def playGame(board, playerChoice, enemyChoice):
     tilePlayer = checkInt(tilePlayer)
     while(isPositionAvaliable(tilePlayer, board) == False):
         tilePlayer = int(input(colors.fg.enemy + "Please choose a different tile: " + colors.reset))  
+        tilePlayer = checkInt(tilePlayer)
     else:
         board = updateBoard(tilePlayer, playerChoice, board)
         printBoard(board, 1)
+        print("\t")
         if(victoryCheck(board)):
+            return(board)
+        elif(stalemate(board) and (victoryCheck(board) == False)):
             return(board)
 
     tileEnemy = input(colors.fg.enemy + "Player 2" + colors.reset + ", Please choose a tile: ")
     tileEnemy = checkInt(tileEnemy)
     while(isPositionAvaliable(tileEnemy, board) == False):
-        tileEnemy = int(input(colors.fg.enemy + "Please choose a different tile: " + colors.reset))  
+        tileEnemy = input(colors.fg.enemy + "Please choose a different tile: " + colors.reset)
+        tileEnemy = checkInt(tileEnemy)
     else:
         board = updateBoard(tileEnemy, enemyChoice, board)
         printBoard(board, 2)
+        print("\t")
         if(victoryCheck(board)):
+            return(board)
+        elif(stalemate(board) and (victoryCheck(board) == False)):
             return(board)
 
 
@@ -246,16 +246,16 @@ def main():
 
     while (result != True):
         playGame(board, player, enemy)
+        if(victoryCheck(board) == False) and (stalemate(board)):
+            break
         result = victoryCheck(board)
 
-    if(result == True):
-        print("You win! Thanks for playing!")
-        print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset)
-    else:
-        print("You lose! Good luck next time.")
-        print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset)
+    if(stalemate(board)) and (victoryCheck(board) == False):
+        print("Stalemate! Good luck next time.")
+        print("The score is:\n Player 1: " + colors.fg.player + "% s" % playerScore + colors.reset + "\n Player 2: " + colors.fg.enemy + "% s" % enemyScore + colors.reset + "\n")
 
 """
+In order to use AI, just replace "enemy" variables with random choices
 For AI, use secrets from rand for more random choices, lowest level AI is just choosing randomly,
 without regard for player choice, can make AI smarter by having checks to see where player places
 their choices, and tries to block their moves
